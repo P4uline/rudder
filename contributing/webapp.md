@@ -187,6 +187,9 @@ Go into the cloned `rudder-tests` github repository. The directory `rudder-tests
 Please read https://github.com/Normation/rudder-tests#adding-a-platform-or-an-os for further information.
 
 Create a `<dev_env_name>.json` file in `./platform/` and put your platform's configuration in it.
+
+> Note: no `.` are allowed in the name of the file except for the extension `.json` or it doesn't work properly.
+
 Here is the most minimalistic example of a functional configuration:
 
 ```json
@@ -516,6 +519,77 @@ The first param is your local user. <br />
 The second is your gitusername (used to clone your `Normation/rudder` fork). <br />
 
 Let's code ! :rocket:
+
+#### Running rudder in production mode
+
+Some use cases need an environment close to the production. For instance, if you test a feature that need an intercation with agent it won't be possible in dev mode. There are no communication possible between the dev server and any agents.
+The way to test in such case is to setup a vm in production mode, implement locally your changes, build a war and upload the war on the server you just setup.
+
+
+Build the war with
+```
+mvn clean package
+```
+Then see the target directory
+```
+pauline@ThinkPad-T14s-Gen-6:~/Workspace/rudder/webapp/sources/rudder/rudder-web/target$ ls
+classes                       rudder-web-8.3.5-SNAPSHOT              surefire-reports
+classes.-287291424.timestamp  rudder-web-8.3.5-SNAPSHOT-classes.jar  test-classes
+generated-sources             rudder-web-8.3.5-SNAPSHOT-tests.jar    test-classes.64873501.timestamp
+generated-test-sources        rudder-web-8.3.5-SNAPSHOT.war
+maven-status                  specs2-reports
+```
+The war generated is named `rudder-web-8.3.5-SNAPSHOT.war` in this example.
+
+Copy the war in the vbox server
+```
+cd <workspace>/rudder-tests
+vagrant upload <workspace>/rudder/webapp/sources/rudder/rudder-web/target/rudder-web-8.3.5-SNAPSHOT.war
+```
+
+Connect to the vbox and put the war in the share directory and restart the service `rudder-jetty`
+```
+vagrant ssh myvmtest_server
+sudo su
+mv rudder-web-8.3.5-SNAPSHOT.war /opt/rudder/share/webapps/
+mv rudder.war rudder.war.save
+mv rudder-web-8.3.5-SNAPSHOT.war rudder.war
+systemctl restart rudder-jetty
+```
+Get the ip of the server by running `ip a` and check the change in the browser for instance: `http://192.168.49.2` (user admin/admin)
+
+#### Testing rudder in production mode
+
+Some use cases require an environment in production mode, like ticket validation for instance. Run an environment matching the ticket. Validating ticket require to install a vm with rudder in the same version required in the ticket. 
+
+If a pull request is merged recently, then you need to test on a SNAPSHOT version, and you need to wait the next nightly build after the merge. Make sure you're using the last nightly build. You can check the date of the last logs `/var/log/rudder/webapp/webapp.log` and if you need to update to the last version you can run `apt update && apt install rudder-server` from the vbox server.
+Example of configuration using nighlty versions :
+```
+{
+"default": { "rudder-version": "8.3-nightly", "system": "debian12", "inventory-os": "debian" },
+"server":  { "rudder-setup": "server" }
+}
+```
+
+See the versions of rudder here `https://repository.rudder.io/`
+
+#### Testing rudder api
+
+- setup the environment with the right rudder version
+- create some api token in rudder webapp : Users & accesses > API accounts > Create and account
+- copy the token create to the clipboard, save it somewhere and put it in the curl command as a header `H 'X-API-Token:VJ9F5mVeIv1xZ6xhv910jgPgWLVuKlo5'`
+- install the required plugin in rudder webapp, setup the license if necessary
+- execute some `curl` command
+
+Example of curl command :
+```
+curl -k https://<vm_server_ip>/rudder/api/latest/systemUpdate/targets \
+        -H 'X-API-Token:VJ9F5mVeIv1xZ6xhv910jgPgWLVuKlo5' \
+        -H 'Content-Type:application/json' \
+        -d '[]'
+```
+
+> Note: to setup the license, there is a user `demo-normation` available in `passbolt` https://passwords.normation.com to people in the group `Developpeurs`.
 
 #### Documentations
 If you want to learn how to use Rudder and its web interface, consult the documentation here : https://docs.rudder.io/reference/5.0/usage/web_interface.html :shipit:
