@@ -571,7 +571,7 @@ Example of configuration using nighlty versions :
 }
 ```
 
-See the versions of rudder here `https://repository.rudder.io/`
+See the versions of rudder here https://repository.rudder.io/
 
 #### Testing rudder api
 
