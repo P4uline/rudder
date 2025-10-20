@@ -577,7 +577,7 @@ See the versions of rudder here https://repository.rudder.io/
 
 - setup the environment with the right rudder version
 - create some api token in rudder webapp : Users & accesses > API accounts > Create and account
-- copy the token create to the clipboard, save it somewhere and put it in the curl command as a header `H 'X-API-Token:<some-token>'`
+- copy the token create to the clipboard, save it somewhere and put it in the curl command as a header `-H 'X-API-Token:<some-token>'`
 - install the required plugin in rudder webapp, setup the license if necessary
 - execute some `curl` command
 
