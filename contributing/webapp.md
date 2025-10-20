@@ -577,14 +577,14 @@ See the versions of rudder here https://repository.rudder.io/
 
 - setup the environment with the right rudder version
 - create some api token in rudder webapp : Users & accesses > API accounts > Create and account
-- copy the token create to the clipboard, save it somewhere and put it in the curl command as a header `H 'X-API-Token:VJ9F5mVeIv1xZ6xhv910jgPgWLVuKlo5'`
+- copy the token create to the clipboard, save it somewhere and put it in the curl command as a header `H 'X-API-Token:<some-token>'`
 - install the required plugin in rudder webapp, setup the license if necessary
 - execute some `curl` command
 
 Example of curl command :
 ```
 curl -k https://<vm_server_ip>/rudder/api/latest/systemUpdate/targets \
-        -H 'X-API-Token:VJ9F5mVeIv1xZ6xhv910jgPgWLVuKlo5' \
+        -H 'X-API-Token:<some-token>' \
         -H 'Content-Type:application/json' \
         -d '[]'
 ```
