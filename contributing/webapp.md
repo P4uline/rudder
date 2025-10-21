@@ -395,14 +395,15 @@ In _Run -> Edit Configuration_ add a new configuration and choose Jetty Runner
 ```
 > Note: `-Drun.mode` values : `production`, `development`
 
+> Beware, replace `<user>`
+
+
 When the jetty runner starts, there is an error about the relay because in development mode there is no relay nor agent. So please ignore the following error log: 
 ```
 [2025-10-07T15:45:31+0200] WARNING Failed to execute shell command from Rudder: error=2, No such file or directory
 2025-10-07 15:45:31+0200 ERROR com.normation.rudder.services.policies.WriteNodeCertificatesPemImpl - Unexpected: Error when executing reload command '/opt/rudder/bin/rudder relay reload -p' after writing node certificates file. Command output: code: -2147483648
 
 ``` 
-
-> Beware, replace `<user>`
 
 If you are using JRebel add these following arguments :
 ```
@@ -576,8 +577,10 @@ See the versions of rudder here https://repository.rudder.io/
 #### Testing rudder api
 
 - setup the environment with the right rudder version
-- create some api token in rudder webapp : Users & accesses > API accounts > Create and account
-- copy the token create to the clipboard, save it somewhere and put it in the curl command as a header `-H 'X-API-Token:<some-token>'`
+- use an API token, there are two ways to get a token
+  - you can create some api token in rudder webapp : Users & accesses > API accounts > Create and account and copy the token create to the clipboard, save it somewhere
+  - you can use a system token with full admin access, there is dedicated cURL header file : -H @/var/rudder/run/api-token-header
+- put the token in the curl command as a header `-H 'X-API-Token:<some-token>'`
 - install the required plugin in rudder webapp, setup the license if necessary
 - execute some `curl` command
 
