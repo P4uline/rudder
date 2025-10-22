@@ -404,6 +404,7 @@ When the jetty runner starts, there is an error about the relay because in devel
 2025-10-07 15:45:31+0200 ERROR com.normation.rudder.services.policies.WriteNodeCertificatesPemImpl - Unexpected: Error when executing reload command '/opt/rudder/bin/rudder relay reload -p' after writing node certificates file. Command output: code: -2147483648
 
 ``` 
+> Note: see jetty configuration in production mode (for rudder 8.3) : https://docs.rudder.io/reference/8.3/reference/jetty_server_configuration.html
 
 If you are using JRebel add these following arguments :
 ```
