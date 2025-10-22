@@ -497,10 +497,8 @@ You can access the application by running it from IntelliJ. The url is:
 
 #### Local configuration for rudder in dev mode
 
-> Note: Not working in rudder development mode
-> - plugins :
->   - you can clone a plugin then run `make generate-pom` to generate the pom.xml then import the generated pom in intellij. Once the plugin is imported and jetty runner restarted the plugin will be available in the local rudder webapp.
->   - the plugin management page can be stubbed using the property rudder.package.cmd=/opt/rudder/bin/rudder-package (create a fake binary rudder-package)
+> Note: Some features will not work in this development environment 
+> - plugins
 > - agents (compliance and policy generation)
 
 user configuration > 
@@ -516,9 +514,6 @@ user configuration >
 
 ```
 
-> Important: as a requirement, if not done yet you need to fork the following repo: `https://github.com/Normation/rudder`. <br/>
-The first param is your local user. <br />
-The second is your gitusername (used to clone your `Normation/rudder` fork). <br />
 
 Let's code ! :rocket:
 
@@ -560,12 +555,19 @@ systemctl restart rudder-jetty
 ```
 Get the ip of the server by running `ip a` and check the change in the browser for instance: `http://192.168.49.2` (user admin/admin)
 
+#### Using rudder plugins in dev mode
+
+You can clone a plugin then run `make generate-pom` to generate the pom.xml then import the generated pom in intellij. Once the plugin is imported and jetty runner restarted the plugin will be available in the local rudder webapp.
+
+The plugin management page can be stubbed using the property `rudder.package.cmd=/opt/rudder/bin/rudder-package` in order to use a fake binary rudder-package.
+
+
 #### Testing rudder in production mode
 
 Some use cases require an environment in production mode, like ticket validation for instance. Run an environment matching the ticket. Validating ticket require to install a vm with rudder in the same version required in the ticket. 
 
 If a pull request is merged recently, then you need to test on a SNAPSHOT version, and you need to wait the next nightly build after the merge. Make sure you're using the last nightly build. You can check the date of the last logs `/var/log/rudder/webapp/webapp.log` and if you need to update to the last version you can run `apt update && apt install rudder-server` from the vbox server.
-Example of configuration using nighlty versions :
+Example of configuration using nightly versions :
 ```
 {
 "default": { "rudder-version": "8.3-nightly", "system": "debian12", "inventory-os": "debian" },
@@ -578,22 +580,17 @@ See the versions of rudder here https://repository.rudder.io/
 #### Testing rudder api
 
 - setup the environment with the right rudder version
-- use an API token, there are two ways to get a token
-  - you can create some api token in rudder webapp : Users & accesses > API accounts > Create and account and copy the token create to the clipboard, save it somewhere
-  - you can use a system token with full admin access, there is dedicated cURL header file : -H @/var/rudder/run/api-token-header
-- put the token in the curl command as a header `-H 'X-API-Token:<some-token>'`
-- install the required plugin in rudder webapp, setup the license if necessary
+- you need to use a system token, there is dedicated cURL header file : -H @/var/rudder/run/api-token-header with full admin access
+- import the required plugins in intellij
 - execute some `curl` command
 
 Example of curl command :
 ```
-curl -k https://<vm_server_ip>/rudder/api/latest/systemUpdate/targets \
-        -H 'X-API-Token:<some-token>' \
+curl -k https://localhost:<port>/rudder/api/latest/systemUpdate/targets \
+        -H @/var/rudder/run/api-token-header
         -H 'Content-Type:application/json' \
         -d '[]'
 ```
-
-> Note: to setup the license, there is a user `demo-normation` available in `passbolt` https://passwords.normation.com to people in the group `Developpeurs`.
 
 #### Documentations
 If you want to learn how to use Rudder and its web interface, consult the documentation here : https://docs.rudder.io/reference/5.0/usage/web_interface.html :shipit:
