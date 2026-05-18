@@ -402,7 +402,15 @@ class DirectiveEditForm(
                  |$$("#complianceNav").hide();
                  |}else{
                  |$$("#complianceNav").show();
-                 |}""".stripMargin) // JsRaw OK, input are encoded via encJs
+                 |}
+                 |const recentActivityMain = document.getElementById("directiveRecentActivityApp")
+                 |const recentActivityInitValues = {
+                 |  directiveId : "${StringEscapeUtils.escapeEcmaScript(directive.id.uid.value)}",
+                 |  contextPath : contextPath
+                 |};
+                 |const recentActivityApp = Elm.DirectiveRecentActivity.init({node: recentActivityMain, flags: initValues});
+                 |
+                 |""".stripMargin) // JsRaw OK, input are encoded via encJs
       )
     )
 
