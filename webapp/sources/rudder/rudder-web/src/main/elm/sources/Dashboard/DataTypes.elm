@@ -8,6 +8,7 @@ import Time exposing (Posix, Zone)
 -- All our data types
 --
 
+{- TODO move this in a common Activity.elm file -}
 type alias Activity =
     { id : Int
     , actor : String
