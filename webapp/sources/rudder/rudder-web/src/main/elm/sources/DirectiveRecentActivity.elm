@@ -21,7 +21,7 @@ type alias Model =
 
 
 type Msg
-    = ShowActivityTable (Rudder.Table.Msg Msg)
+    = RudderTableMsg (Rudder.Table.Msg Msg)
 
 
 initTable : Rudder.Table.Model Activity Msg
@@ -110,15 +110,21 @@ type alias Activity =
 
 
 table model =
-    div [ class "main-table" ] [ Html.map ShowActivityTable (Rudder.Table.view initTable) ]
+    div [ class "main-table" ] [ Html.map RudderTableMsg (Rudder.Table.view model.activityTable) ]
 
 
 view model =
     table model
 
 
-update message model =
-    ( model, Cmd.none )
+update msg model =
+    case msg of
+        RudderTableMsg m ->
+            let
+                ( activityTable, tableMsg, _ ) =
+                    Rudder.Table.update m model.activityTable
+            in
+            ( { model | activityTable = activityTable }, tableMsg )
 
 
 subscriptions model =
