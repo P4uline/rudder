@@ -1,37 +1,18 @@
 port module Activity.ApiCalls exposing (..)
 
-import Http exposing (..)
-import Url.Builder exposing (QueryParameter)
+import Activity.DataTypes exposing (ContextPath)
+import Activity.JsonDecoder exposing (decodeErrorDetails)
 import Http.Detailed as Detailed
-import Activity.DataTypes exposing (..)
-import Activity.JsonDecoder exposing (..)
-import Activity.JsonEncoder exposing (..)
-
+import Url.Builder exposing (QueryParameter)
 port errorNotification : String -> Cmd msg
 port copy : String -> Cmd msg
 
-getUrl: Model -> List String -> List QueryParameter -> String
-getUrl m url p=
-  Url.Builder.relative (m.contextPath :: "secure" :: "api" :: url) p
+getUrl: ContextPath -> List String -> List QueryParameter -> String
+getUrl contextPath url p=
+  Url.Builder.relative (contextPath :: "secure" :: "api" :: url) p
 
-getActivities : Model -> Cmd Msg
-getActivities model =
-  let
-    req =
-      request
-        { method  = "POST"
-        , headers = [header "X-Requested-With" "XMLHttpRequest"]
-        , url     = getUrl model [ "eventlog" ] []
-        , body    = encodeRestEventLogFilter |> jsonBody
-        , expect  = Detailed.expectJson GetActivities decodeGetActivities
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-  in
-    req
-
-processApiError : String -> Detailed.Error String -> Model -> ( Model, Cmd Msg )
-processApiError apiName err model =
+processApiError : String -> Detailed.Error String -> Cmd msg
+processApiError apiName err =
     let
         message =
             case err of
@@ -54,4 +35,5 @@ processApiError apiName err model =
                 Detailed.BadBody metadata body msg ->
                     msg
     in
-    ( model, errorNotification ("Error when " ++ apiName ++ ", details: \n" ++ message) )
+      errorNotification ("Error when " ++ apiName ++ ", details: \n" ++ message)
+
