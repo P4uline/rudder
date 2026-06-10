@@ -8,11 +8,13 @@ import Time exposing (Posix, Zone)
 -- All our data types
 --
 
+type alias ContextPath = String
+
 type alias Activity =
     { id : Int
     , actor : String
     , description : String
-    {-, date : Posix-}
+    {-, date : Posix-} {- FIXME uncomment date -}
     }
 
 type alias RestEventLogFilter =
@@ -27,15 +29,3 @@ type alias EventLogFilterOrder =
     , name : String
     }
 
-type alias Model =
-    { contextPath : String
-    , activities : List Activity
-    , currentTime : Posix
-    , zone : Zone
-    }
-
-type Msg
-    = CallApi (Model -> Cmd Msg)
-    | GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, (List Activity) ))
-    | Tick Posix
-    | Copy String
