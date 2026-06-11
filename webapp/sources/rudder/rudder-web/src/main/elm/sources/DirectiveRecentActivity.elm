@@ -24,7 +24,6 @@ type alias Model =
     { directiveId : DirectiveId
     , activityTable : Rudder.Table.Model Activity Msg
     , contextPath : ContextPath
-    , activities : List Activity
     , currentTime : Posix
     , zone : Zone
     }
@@ -103,7 +102,7 @@ init flags =
                     Dict.get flags.timeZone TimeZone.zones
                         |> Maybe.withDefault (\() -> Time.utc)-}
         initModel =
-            Model flags.directiveId (initTable []) flags.contextPath [] currentTime utc
+            Model flags.directiveId (initTable []) flags.contextPath currentTime utc
         initActions =
             [ Cmd.map ActivityMessage (getActivities initModel.contextPath)
             , initTooltips ""
@@ -138,8 +137,12 @@ update msg model =
             case a of
                 GetActivities res ->
                      case res of
+                         -- Update table data
                          Ok ( _, activities ) ->
-                             ( { model | activities = activities } {- FIXME i'm sure there is a better way to write this -}
+                             let
+                                 updatedTable = updateData activities model.activityTable
+                             in
+                             ( { model | activityTable = updatedTable} {- FIXME i'm sure there is a better way to write this -}
                              , initTooltips ""
                              )
                          Err err ->
