@@ -1,7 +1,7 @@
 module DirectiveRecentActivity exposing (..)
 
 import Activity.ApiCalls exposing (copy, getActivities, getUrl, processApiError)
-import Activity.DataTypes exposing (Activity, ActivityMsg, ContextPath)
+import Activity.DataTypes exposing (Activity, ActivityMsg(..), ContextPath)
 import Activity.InitTooltips exposing (initTooltips)
 import Activity.JsonDecoder exposing (decodeGetActivities)
 import Activity.JsonEncoder exposing (encodeRestEventLogFilter)
@@ -105,10 +105,10 @@ init flags =
         initModel =
             Model flags.directiveId (initTable []) flags.contextPath [] currentTime utc
         initActions =
-            [ getActivities (Cmd.map ActivityMessage GetActivities initModel.contextPath )
-            {-, initTooltips ""
-            , Task.perform (ActivityMessage Tick) Time.now {- FIXME why this ? do it -}
-            -}]
+            [ Cmd.map ActivityMessage (getActivities initModel.contextPath)
+            , initTooltips ""
+            , Cmd.map ActivityMessage (Task.perform Tick Time.now) {- FIXME why this ? do it -}
+            ]
 
     in
     ( initModel, Cmd.batch initActions )
@@ -126,6 +126,8 @@ view model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        CallApi call ->
+            ( model, call model ) {- FIXME : why this ? remove this non expressive Msg, use only functional Message names -}
         RudderTableMsg m ->
             let
                 ( activityTable, tableMsg, _ ) =
@@ -134,17 +136,14 @@ update msg model =
             ( { model | activityTable = activityTable }, tableMsg )
         ActivityMessage a ->
             case a of
-                CallApi call ->
-                  ( model, call model ) {- FIXME : why this ? remove this non expressive Msg, use only functional Message names -}
                 GetActivities res ->
-                            case res of
-                                Ok ( _, activities ) ->
-                                    ( { model | activities = activities } {- FIXME i'm sure there is a better way to write this -}
-                                    , initTooltips ""
-                                    )
-
-                                Err err ->
-                                    (model, processApiError "Getting activities list" err)
+                     case res of
+                         Ok ( _, activities ) ->
+                             ( { model | activities = activities } {- FIXME i'm sure there is a better way to write this -}
+                             , initTooltips ""
+                             )
+                         Err err ->
+                             (model, processApiError "Getting activities list" err)
                 Tick newTime ->
                      ( { model | currentTime = newTime }, Cmd.none )
                 Copy s -> {- FIXME: Why is it useful ? -}
@@ -153,8 +152,8 @@ update msg model =
 
 subscriptions _ =
     Sub.batch
-        [ Time.every 1000 Tick -- Update of the current time every second
-            ]
+        [ Sub.map ActivityMessage (Time.every 1000 Tick) -- Update of the current time every second
+        ]
 
 main =
     Browser.element
