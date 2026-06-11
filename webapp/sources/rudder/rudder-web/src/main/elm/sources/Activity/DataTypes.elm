@@ -29,3 +29,8 @@ type alias EventLogFilterOrder =
     , name : String
     }
 
+type ActivityMsg
+    = GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, (List Activity) ))
+    | Tick Posix
+    | Copy String
+

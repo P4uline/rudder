@@ -1,7 +1,7 @@
 module DirectiveRecentActivity exposing (..)
 
-import Activity.ApiCalls exposing (copy, getUrl, processApiError)
-import Activity.DataTypes exposing (Activity, ContextPath)
+import Activity.ApiCalls exposing (copy, getActivities, getUrl, processApiError)
+import Activity.DataTypes exposing (Activity, ActivityMsg, ContextPath)
 import Activity.InitTooltips exposing (initTooltips)
 import Activity.JsonDecoder exposing (decodeGetActivities)
 import Activity.JsonEncoder exposing (encodeRestEventLogFilter)
@@ -18,9 +18,6 @@ import Time exposing (Posix, Zone, millisToPosix, utc)
 import Http exposing (Error)
 import Http.Detailed
 
-
-
-
 type alias DirectiveId = String
 
 type alias Model =
@@ -31,13 +28,10 @@ type alias Model =
     , currentTime : Posix
     , zone : Zone
     }
-
 type Msg
-    = RudderTableMsg (Rudder.Table.Msg Msg)
-    | CallApi (Model -> Cmd Msg)
-    | GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, (List Activity) ))
-    | Tick Posix
-    | Copy String
+    = CallApi (Model -> Cmd Msg)
+    | RudderTableMsg (Rudder.Table.Msg Msg)
+    | ActivityMessage ActivityMsg
 
 initTable : List Activity -> Rudder.Table.Model Activity Msg
 initTable activities =
@@ -60,7 +54,7 @@ initTable activities =
                             )
                     )
 
-        {-data =
+        data =
             [ { id = 1
               , actor = "Admin"
               , description = "Awesome directive 1"
@@ -91,26 +85,11 @@ initTable activities =
 
               {- , date=Time.now -}
               }
-            ]-}
+            ]
     in
     -- Rudder.Table.init config data
-    Rudder.Table.init config activities
+    Rudder.Table.init config []
 
-getActivities : ContextPath ->  Cmd Msg
-getActivities contextPath =
-  let
-    req =
-      request
-        { method  = "POST"
-        , headers = [header "X-Requested-With" "XMLHttpRequest"]
-        , url     = getUrl contextPath [ "eventlog" ] []
-        , body    = encodeRestEventLogFilter |> jsonBody
-        , expect  = Detailed.expectJson GetActivities decodeGetActivities
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-  in
-    req
 
 
 {- FIXME pass a timezone to the elm app, just as directiveId and contextPath and then use initTimeZone value instead of currentTime -}
@@ -126,10 +105,10 @@ init flags =
         initModel =
             Model flags.directiveId (initTable []) flags.contextPath [] currentTime utc
         initActions =
-            [ getActivities initModel.contextPath
-            , initTooltips ""
-            , Task.perform Tick Time.now {- FIXME why this ? do it -}
-            ]
+            [ getActivities (Cmd.map ActivityMessage GetActivities initModel.contextPath )
+            {-, initTooltips ""
+            , Task.perform (ActivityMessage Tick) Time.now {- FIXME why this ? do it -}
+            -}]
 
     in
     ( initModel, Cmd.batch initActions )
@@ -153,26 +132,28 @@ update msg model =
                     Rudder.Table.update m model.activityTable
             in
             ( { model | activityTable = activityTable }, tableMsg )
-        CallApi call ->
-          ( model, call model ) {- FIXME : why this ? remove this non expressive Msg, use only functional Message names -}
-        GetActivities res ->
-                    case res of
-                        Ok ( _, activities ) ->
-                            ( { model | activities = activities } {- FIXME i'm sure there is a better way to write this -}
-                            , initTooltips ""
-                            )
+        ActivityMessage a ->
+            case a of
+                CallApi call ->
+                  ( model, call model ) {- FIXME : why this ? remove this non expressive Msg, use only functional Message names -}
+                GetActivities res ->
+                            case res of
+                                Ok ( _, activities ) ->
+                                    ( { model | activities = activities } {- FIXME i'm sure there is a better way to write this -}
+                                    , initTooltips ""
+                                    )
 
-                        Err err ->
-                            (model, processApiError "Getting activities list" err)
-        Tick newTime ->
-             ( { model | currentTime = newTime }, Cmd.none )
-        Copy s -> {- FIXME: Why is it useful ? -}
-            ( model, copy s )
+                                Err err ->
+                                    (model, processApiError "Getting activities list" err)
+                Tick newTime ->
+                     ( { model | currentTime = newTime }, Cmd.none )
+                Copy s -> {- FIXME: Why is it useful ? -}
+                    ( model, copy s )
 
 
 subscriptions _ =
     Sub.batch
-            [ Time.every 1000 Tick -- Update of the current time every second
+        [ Time.every 1000 Tick -- Update of the current time every second
             ]
 
 main =
