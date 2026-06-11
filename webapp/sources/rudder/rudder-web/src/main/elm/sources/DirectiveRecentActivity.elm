@@ -105,7 +105,7 @@ init flags =
             Model flags.directiveId (initTable []) flags.contextPath currentTime utc
         initActions =
             [ Cmd.map ActivityMessage (getActivities initModel.contextPath)
-            , initTooltips ""
+            , initTooltips () {- Call initTooltips javascript function to have beautiful customized fancy tooltips in elm app -}
             , Cmd.map ActivityMessage (Task.perform Tick Time.now) {- FIXME why this ? do it -}
             ]
 
@@ -143,7 +143,7 @@ update msg model =
                                  updatedTable = updateData activities model.activityTable
                              in
                              ( { model | activityTable = updatedTable} {- FIXME i'm sure there is a better way to write this -}
-                             , initTooltips ""
+                             , initTooltips () {- FIXME is this feature necessary for the recent activity ? do we want tooltips in the table -}
                              )
                          Err err ->
                              (model, processApiError "Getting activities list" err)
