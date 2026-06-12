@@ -93,8 +93,6 @@ init flags =
 
             {- Call initTooltips javascript function to have beautiful customized fancy tooltips in elm app -}
             , Cmd.map ActivityMessage (Task.perform Tick Time.now)
-
-            {- FIXME why this ? -}
             ]
     in
     ( initModel, Cmd.batch initActions )
