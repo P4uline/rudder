@@ -53,40 +53,7 @@ initTable activities =
                             )
                     )
 
-        data =
-            [ { id = 1
-              , actor = "Admin"
-              , description = "Awesome directive 1"
-
-              {- , date=Time.now -}
-              }
-            , { id = 2
-              , actor = "Admin"
-              , description = "Awesome directive 2"
-
-              {- , date=Time.now -}
-              }
-            , { id = 3
-              , actor = "Admin"
-              , description = "Awesome directive 3"
-
-              {- , date=Time.now -}
-              }
-            , { id = 4
-              , actor = "Admin"
-              , description = "Awesome directive 4"
-
-              {- , date=Time.now -}
-              }
-            , { id = 5
-              , actor = "Admin"
-              , description = "Awesome directive 5"
-
-              {- , date=Time.now -}
-              }
-            ]
     in
-    -- Rudder.Table.init config data
     Rudder.Table.init config []
 
 
