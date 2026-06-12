@@ -6,27 +6,33 @@ import Activity.JsonEncoder exposing (encodeRestEventLogFilter)
 import Http exposing (header, jsonBody, request)
 import Http.Detailed as Detailed
 import Url.Builder exposing (QueryParameter)
+
+
 port errorNotification : String -> Cmd msg
+
+
 port copy : String -> Cmd msg
 
-getUrl: ContextPath -> List String -> List QueryParameter -> String
-getUrl (ContextPath contextPath) url p=
-  Url.Builder.relative (contextPath :: "secure" :: "api" :: url) p
 
-getActivities : Search -> List String -> ContextPath ->  Cmd ActivityMsg
+getUrl : ContextPath -> List String -> List QueryParameter -> String
+getUrl (ContextPath contextPath) url p =
+    Url.Builder.relative (contextPath :: "secure" :: "api" :: url) p
+
+
+getActivities : Search -> List String -> ContextPath -> Cmd ActivityMsg
 getActivities search filterType contextPath =
-  let
-    req =
-      request
-        { method  = "POST"
-        , headers = [header "X-Requested-With" "XMLHttpRequest"]
-        , url     = getUrl contextPath [ "eventlog" ] []
-        , body    = encodeRestEventLogFilter search filterType |> jsonBody
-        , expect  = Detailed.expectJson GetActivities decodeGetActivities
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-  in
+    let
+        req =
+            request
+                { method = "POST"
+                , headers = [ header "X-Requested-With" "XMLHttpRequest" ]
+                , url = getUrl contextPath [ "eventlog" ] []
+                , body = encodeRestEventLogFilter search filterType |> jsonBody
+                , expect = Detailed.expectJson GetActivities decodeGetActivities
+                , timeout = Nothing
+                , tracker = Nothing
+                }
+    in
     req
 
 
@@ -54,5 +60,4 @@ processApiError apiName err =
                 Detailed.BadBody metadata body msg ->
                     msg
     in
-      errorNotification ("Error when " ++ apiName ++ ", details: \n" ++ message)
-
+    errorNotification ("Error when " ++ apiName ++ ", details: \n" ++ message)

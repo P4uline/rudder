@@ -4,28 +4,40 @@ import Http exposing (Error)
 import Http.Detailed
 import Time exposing (Posix, Zone)
 
+
+
 --
 -- All our data types
 --
 
-type ContextPath = ContextPath String
 
-type Search = Search String
+type ContextPath
+    = ContextPath String
 
-type FilterType = List String
+
+type Search
+    = Search String
+
+
+type FilterType
+    = List String
+
 
 type alias Activity =
     { id : Int
     , actor : String
     , description : String
-    {-, date : Posix-} {- FIXME uncomment date -}
+
+    {- , date : Posix -} {- FIXME uncomment date -}
     }
 
+
 type alias RestEventLogFilter =
-    { draw: Int
-    , start: Int
-    , length: Int
+    { draw : Int
+    , start : Int
+    , length : Int
     }
+
 
 type alias EventLogFilterOrder =
     { column : Int
@@ -33,8 +45,8 @@ type alias EventLogFilterOrder =
     , name : String
     }
 
+
 type ActivityMsg
-    = GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, (List Activity) ))
+    = GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, List Activity ))
     | Tick Posix
     | Copy String
-
