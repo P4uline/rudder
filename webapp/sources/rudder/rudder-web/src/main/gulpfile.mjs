@@ -120,8 +120,6 @@ function elm(cb) {
             cwd: path.join(paths.elm.src),
         }))
         .pipe(rename(function (path) {
-
-            console.log("path: " + path.basename.toLowerCase()) // TODO remove
             return {
                 dirname: '',
                 basename: 'rudder-' + path.basename.toLowerCase(),
@@ -143,7 +141,7 @@ function elm(cb) {
         .pipe(profile.production(terser({
             mangle: true,
         })))
-        .pipe(dest(paths.elm.dest)) // TODO remove
+        .pipe(dest(paths.elm.dest));
     cb();
 };
 
