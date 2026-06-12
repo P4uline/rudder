@@ -8,7 +8,11 @@ import Time exposing (Posix, Zone)
 -- All our data types
 --
 
-type alias ContextPath = String
+type ContextPath = ContextPath String
+
+type Search = Search String
+
+type FilterType = List String
 
 type alias Activity =
     { id : Int

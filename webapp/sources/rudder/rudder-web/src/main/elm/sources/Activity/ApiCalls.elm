@@ -1,8 +1,8 @@
 port module Activity.ApiCalls exposing (..)
 
-import Activity.DataTypes exposing (ActivityMsg(..), ContextPath)
+import Activity.DataTypes exposing (ActivityMsg(..), ContextPath(..), Search)
 import Activity.JsonDecoder exposing (decodeErrorDetails, decodeGetActivities)
-import Dashboard.JsonEncoder exposing (encodeRestEventLogFilter)
+import Activity.JsonEncoder exposing (encodeRestEventLogFilter)
 import Http exposing (header, jsonBody, request)
 import Http.Detailed as Detailed
 import Url.Builder exposing (QueryParameter)
@@ -10,18 +10,18 @@ port errorNotification : String -> Cmd msg
 port copy : String -> Cmd msg
 
 getUrl: ContextPath -> List String -> List QueryParameter -> String
-getUrl contextPath url p=
+getUrl (ContextPath contextPath) url p=
   Url.Builder.relative (contextPath :: "secure" :: "api" :: url) p
 
-getActivities : ContextPath ->  Cmd ActivityMsg
-getActivities contextPath =
+getActivities : Search -> List String -> ContextPath ->  Cmd ActivityMsg
+getActivities search filterType contextPath =
   let
     req =
       request
         { method  = "POST"
         , headers = [header "X-Requested-With" "XMLHttpRequest"]
         , url     = getUrl contextPath [ "eventlog" ] []
-        , body    = encodeRestEventLogFilter |> jsonBody
+        , body    = encodeRestEventLogFilter search filterType |> jsonBody
         , expect  = Detailed.expectJson GetActivities decodeGetActivities
         , timeout = Nothing
         , tracker = Nothing

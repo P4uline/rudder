@@ -1,24 +1,18 @@
 module DirectiveRecentActivity exposing (..)
 
-import Activity.ApiCalls exposing (copy, getActivities, getUrl, processApiError)
-import Activity.DataTypes exposing (Activity, ActivityMsg(..), ContextPath)
+import Activity.ApiCalls exposing (copy, getActivities, processApiError)
+import Activity.DataTypes exposing (Activity, ActivityMsg(..), ContextPath(..), Search(..))
 import Activity.InitTooltips exposing (initTooltips)
-import Activity.JsonDecoder exposing (decodeGetActivities)
-import Activity.JsonEncoder exposing (encodeRestEventLogFilter)
 import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
-import Http exposing (header, jsonBody, request)
-import Http.Detailed as Detailed
 import List.Nonempty as NonEmptyList
 import Ordering exposing (Ordering)
 import Rudder.Table exposing (..)
 import Task
 import Time exposing (Posix, Zone, millisToPosix, utc)
-import Http exposing (Error)
-import Http.Detailed
 
-type alias DirectiveId = String
+type DirectiveId = DirectiveId String
 
 type alias Model =
     { directiveId : DirectiveId
@@ -69,11 +63,13 @@ init flags =
                     Dict.get flags.timeZone TimeZone.zones
                         |> Maybe.withDefault (\() -> Time.utc)-}
         initModel =
-            Model flags.directiveId initTable flags.contextPath currentTime utc
+            Model (DirectiveId flags.directiveId) initTable (ContextPath flags.contextPath) currentTime utc
+        filterType = [ "AddDirective", "DeleteDirective", "ModifyDirective"] -- keep only directive activity filtering on event log types
+        search = Search flags.directiveId -- full text search on directive id to keep activity related to this directive
         initActions =
-            [ Cmd.map ActivityMessage (getActivities initModel.contextPath)
+            [ Cmd.map ActivityMessage (getActivities search filterType (initModel.contextPath))
             , initTooltips () {- Call initTooltips javascript function to have beautiful customized fancy tooltips in elm app -}
-            , Cmd.map ActivityMessage (Task.perform Tick Time.now) {- FIXME why this ? do it -}
+            , Cmd.map ActivityMessage (Task.perform Tick Time.now) {- FIXME why this ? -}
             ]
 
     in
@@ -109,7 +105,7 @@ update msg model =
                              let
                                  updatedTable = updateData activities model.activityTable
                              in
-                             ( { model | activityTable = updatedTable} {- FIXME i'm sure there is a better way to write this -}
+                             ( { model | activityTable = updatedTable}
                              , initTooltips () {- FIXME is this feature necessary for the recent activity ? do we want tooltips in the table -}
                              )
                          Err err ->
