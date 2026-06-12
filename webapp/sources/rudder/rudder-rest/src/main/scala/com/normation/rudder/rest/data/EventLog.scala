@@ -37,28 +37,25 @@
 package com.normation.rudder.rest.data
 
 import cats.data.NonEmptyList
-import com.normation.eventlog.EventActor
-import com.normation.eventlog.EventLog
-import com.normation.eventlog.EventLogRequest
-import com.normation.eventlog.EventLogRequest.Column
-import com.normation.eventlog.EventLogRequest.Direction
-import com.normation.eventlog.EventLogRequest.Order
-import com.normation.eventlog.EventLogRequest.PrincipalFilter
-import com.normation.eventlog.EventLogRequest.Search
+import com.normation.eventlog.EventLogRequest.*
+import com.normation.eventlog.{EventActor, EventLog, EventLogFilter, EventLogRequest}
+import com.normation.rudder.domain.eventlog.{AddDirective, DeleteDirective, ModifyDirective}
 import com.normation.rudder.domain.properties.NodeProperty
 import com.normation.rudder.web.services.EventLogDetailsGenerator
 import com.normation.utils.DateFormaterService
 import enumeratum.Enum
 import enumeratum.EnumEntry.Lowercase
 import io.scalaland.chimney.Transformer
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import org.joda.time.DateTime
-import scala.xml.NodeSeq
-import zio.Chunk
 import zio.json.*
 import zio.json.ast.Json
+import zio.{Chunk, NonEmptyChunk}
+
+import java.time.{LocalDateTime, ZoneOffset}
+import java.time.format.DateTimeFormatter
+import scala.xml.NodeSeq
+import com.normation.eventlog.EventLogFilter
+
 
 /**
   * Representation of an event log in the Rest API.
@@ -136,7 +133,8 @@ final case class RestEventLogFilter(
     startDate: Option[LocalDateTime],
     endDate:   Option[LocalDateTime],
     principal: Option[EventLogRequest.PrincipalFilter],
-    order:     Chunk[EventLogRequest.Order]
+    order:     Chunk[EventLogRequest.Order],
+    typeFilter: Option[EventLogRequest.TypeFilter]
 ) {
   def toEventLogRequest: EventLogRequest = {
     EventLogRequest(
@@ -147,12 +145,29 @@ final case class RestEventLogFilter(
       endDate.map(_.toInstant(ZoneOffset.UTC)),
       principal,
       order.toList.headOption,
-      None
+      typeFilter
     )
   }
 }
 
+object EventLogFilter {
+  def apply(x: String): EventLogFilter = {
+    x match {
+      case "AddDirective" => AddDirective
+      case "DeleteDirective" => DeleteDirective
+      case "ModifyDirective" => ModifyDirective
+      case other => throw new Exception(s"The type '${other}' is not a com.normation.rudder.rest.data.EventLogFilter type handled")
+    }
+  }
+}
+
+
 object RestEventLogFilter  {
+  implicit val typeFilterDecoder:         JsonDecoder[TypeFilter]               = DeriveJsonDecoder.gen[TypeFilter]
+
+  implicit val eventLogDecoder: JsonDecoder[NonEmptyList[EventLogFilter]] = JsonDecoder[NonEmptyChunk[String]].mapOrFail(eventLogs =>
+    NonEmptyList.fromList(eventLogs.map(EventLogFilter(_)).toList).toRight("Could not decode event log filter.")
+  )
   implicit val searchDecoder:             JsonDecoder[Search]                   = DeriveJsonDecoder.gen[Search]
   implicit val columnDecoder:             JsonDecoder[Column]                   = JsonDecoder[Int].mapOrFail(Column.fromId)
   implicit val directionDecoder:          JsonDecoder[Direction]                = JsonDecoder[String].mapOrFail(Direction.parse)
