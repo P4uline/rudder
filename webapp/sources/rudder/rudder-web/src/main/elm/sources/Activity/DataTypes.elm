@@ -27,8 +27,7 @@ type alias Activity =
     { id : Int
     , actor : String
     , description : String
-
-    {- , date : Posix -} {- FIXME uncomment date -}
+    , date : Posix
     }
 
 

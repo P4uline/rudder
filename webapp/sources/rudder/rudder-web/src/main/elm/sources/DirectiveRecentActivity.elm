@@ -4,6 +4,7 @@ import Activity.ApiCalls exposing (copy, getActivities, processApiError)
 import Activity.DataTypes exposing (Activity, ActivityMsg(..), ContextPath(..), Search(..))
 import Activity.InitTooltips exposing (initTooltips)
 import Browser
+import DateFormat
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import List.Nonempty as NonEmptyList
@@ -11,6 +12,7 @@ import Ordering exposing (Ordering)
 import Rudder.Table exposing (..)
 import Task
 import Time exposing (Posix, Zone, millisToPosix, utc)
+import Time.DateTime
 
 
 type DirectiveId
@@ -40,6 +42,8 @@ initTable =
                 { name = ColumnName "Id", renderHtml = .id >> String.fromInt >> text, ordering = Ordering.byField .id }
                 [ { name = ColumnName "Actor", renderHtml = .actor >> text, ordering = Ordering.byField .actor }
                 , { name = ColumnName "Description", renderHtml = .description >> text, ordering = Ordering.byField .description }
+                -- FIXME
+                {-, { name = ColumnName "Date", renderHtml =  >>  text, ordering = Ordering.byField .date }-}
                 ]
 
         config =
