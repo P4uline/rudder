@@ -32,8 +32,8 @@ type Msg
     | RudderTableMsg (Rudder.Table.Msg Msg)
     | ActivityMessage ActivityMsg
 
-initTable : List Activity -> Rudder.Table.Model Activity Msg
-initTable activities =
+initTable : Rudder.Table.Model Activity Msg
+initTable =
     let
         columns =
             NonEmptyList.Nonempty
@@ -69,7 +69,7 @@ init flags =
                     Dict.get flags.timeZone TimeZone.zones
                         |> Maybe.withDefault (\() -> Time.utc)-}
         initModel =
-            Model flags.directiveId (initTable []) flags.contextPath currentTime utc
+            Model flags.directiveId initTable flags.contextPath currentTime utc
         initActions =
             [ Cmd.map ActivityMessage (getActivities initModel.contextPath)
             , initTooltips () {- Call initTooltips javascript function to have beautiful customized fancy tooltips in elm app -}
