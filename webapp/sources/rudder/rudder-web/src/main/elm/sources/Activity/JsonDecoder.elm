@@ -1,12 +1,12 @@
 module Activity.JsonDecoder exposing (..)
 
 import Activity.DataTypes exposing (..)
-import Html exposing (Html, text)
 import Json.Decode exposing (..)
 import Json.Decode.Extra
 import Json.Decode.Pipeline exposing (..)
 import List exposing (drop, head)
 import String exposing (join, split)
+import Html exposing (Html, text)
 
 
 decodeGetActivities : Decoder (List Activity)
@@ -19,9 +19,16 @@ decodeActivity =
     succeed Activity
         |> required "id" int
         |> required "actor" string
-        |> required "description" string
+        |> required "description" stringToHtmlMsg
         |> required "date" Json.Decode.Extra.datetime
 
+stringToHtmlMsg : Decoder (Html ActivityMsg)
+stringToHtmlMsg =
+    let
+        s2HtmlMsg : String -> Decoder (Html ActivityMsg)
+        s2HtmlMsg s = succeed (text s)
+    in
+        string |> andThen s2HtmlMsg
 
 decodeErrorDetails : String -> ( String, String )
 decodeErrorDetails json =

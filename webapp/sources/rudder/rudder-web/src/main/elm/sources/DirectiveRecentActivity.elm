@@ -40,7 +40,7 @@ initTable timezone =
             NonEmptyList.Nonempty
                 { name = ColumnName "Id", renderHtml = .id >> String.fromInt >> text, ordering = Ordering.byField .id }
                 [ { name = ColumnName "Actor", renderHtml = .actor >> text, ordering = Ordering.byField .actor }
-                , { name = ColumnName "Description", renderHtml = .description >> text, ordering = Ordering.byField .description }
+                , { name = ColumnName "Description", renderHtml = .description, ordering = Ordering.byField .description }
                 , { name = ColumnName "Date", renderHtml = .date >> posixToString timezone >> text, ordering = Ordering.byField (.date >> Time.posixToMillis) }
                 ]
 

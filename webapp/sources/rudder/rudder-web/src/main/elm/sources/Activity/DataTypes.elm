@@ -27,7 +27,7 @@ type FilterType
 type alias Activity =
     { id : Int
     , actor : String
-    , description : String
+    , description : Html ActivityMsg
     , date : Posix
     }
 
