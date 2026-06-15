@@ -1,13 +1,12 @@
 module Activity.JsonDecoder exposing (..)
 
 import Activity.DataTypes exposing (..)
-import Iso8601
+import Html exposing (Html, text)
 import Json.Decode exposing (..)
 import Json.Decode.Extra
 import Json.Decode.Pipeline exposing (..)
 import List exposing (drop, head)
 import String exposing (join, split)
-import Time exposing (Posix, Zone)
 
 
 decodeGetActivities : Decoder (List Activity)
@@ -22,10 +21,6 @@ decodeActivity =
         |> required "actor" string
         |> required "description" string
         |> required "date" Json.Decode.Extra.datetime
-
-
-
---|> required "date" Json.Decode.Extra.datetime
 
 
 decodeErrorDetails : String -> ( String, String )

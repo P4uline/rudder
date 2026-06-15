@@ -2,17 +2,16 @@ module DirectiveRecentActivity exposing (..)
 
 import Activity.ApiCalls exposing (copy, getActivities, processApiError)
 import Activity.DataTypes exposing (Activity, ActivityMsg(..), ContextPath(..), Search(..))
-import Activity.InitTooltips exposing (initTooltips)
 import Browser
-import DateFormat
+import Dict
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import List.Nonempty as NonEmptyList
 import Ordering exposing (Ordering)
 import Rudder.Table exposing (..)
-import Task
-import Time exposing (Posix, Zone, millisToPosix, utc)
-import Time.DateTime
+import Time exposing (Posix, Zone)
+import TimeZone
+import Utils.DateUtils exposing (posixToString)
 
 
 type DirectiveId
@@ -23,7 +22,6 @@ type alias Model =
     { directiveId : DirectiveId
     , activityTable : Rudder.Table.Model Activity Msg
     , contextPath : ContextPath
-    , currentTime : Posix
     , zone : Zone
     }
 
@@ -34,16 +32,16 @@ type Msg
     | ActivityMessage ActivityMsg
 
 
-initTable : Rudder.Table.Model Activity Msg
-initTable =
+initTable : Zone -> Rudder.Table.Model Activity Msg
+initTable timezone =
+    -- FIXME call html method instead of text for description, decode description as Html
     let
         columns =
             NonEmptyList.Nonempty
                 { name = ColumnName "Id", renderHtml = .id >> String.fromInt >> text, ordering = Ordering.byField .id }
                 [ { name = ColumnName "Actor", renderHtml = .actor >> text, ordering = Ordering.byField .actor }
                 , { name = ColumnName "Description", renderHtml = .description >> text, ordering = Ordering.byField .description }
-                -- FIXME
-                {-, { name = ColumnName "Date", renderHtml =  >>  text, ordering = Ordering.byField .date }-}
+                , { name = ColumnName "Date", renderHtml = .date >> posixToString timezone >> text, ordering = Ordering.byField (.date >> Time.posixToMillis) }
                 ]
 
         config =
@@ -60,24 +58,23 @@ initTable =
     Rudder.Table.init config []
 
 
-
-{- FIXME pass a timezone to the elm app, just as directiveId and contextPath and then use initTimeZone value instead of currentTime -}
-
-
 init :
     { directiveId : String
     , contextPath : String
-
-    {- , timeZone: String -}
+    , timeZone : String
     }
     -> ( Model, Cmd Msg )
 init flags =
     let
-        currentTime =
-            millisToPosix 1000
+        initTimeZone =
+            Dict.get flags.timeZone TimeZone.zones
+                |> Maybe.withDefault (\() -> Time.utc)
+
+        zone =
+            initTimeZone ()
 
         initModel =
-            Model (DirectiveId flags.directiveId) initTable (ContextPath flags.contextPath) currentTime utc
+            Model (DirectiveId flags.directiveId) (initTable zone) (ContextPath flags.contextPath) zone
 
         -- Keep only directive activity filtering on event log types
         filterType =
@@ -88,12 +85,7 @@ init flags =
             Search flags.directiveId
 
         initActions =
-            [ Cmd.map ActivityMessage (getActivities search filterType initModel.contextPath)
-            , initTooltips ()
-
-            {- Call initTooltips javascript function to have beautiful customized fancy tooltips in elm app -}
-            , Cmd.map ActivityMessage (Task.perform Tick Time.now)
-            ]
+            [ Cmd.map ActivityMessage (getActivities search filterType initModel.contextPath) ]
     in
     ( initModel, Cmd.batch initActions )
 
@@ -135,25 +127,17 @@ update msg model =
                                 updatedTable =
                                     updateData activities model.activityTable
                             in
-                            ( { model | activityTable = updatedTable }
-                            , initTooltips () {- FIXME is this feature necessary for the recent activity ? do we want tooltips in the table -}
-                            )
+                            ( { model | activityTable = updatedTable }, Cmd.none )
 
                         Err err ->
                             ( model, processApiError "Getting activities list" err )
 
-                Tick newTime ->
-                    ( { model | currentTime = newTime }, Cmd.none )
-
-                Copy s ->
-                    {- FIXME: Why is it useful ? -}
+                CopyToClipboard s ->
                     ( model, copy s )
 
 
 subscriptions _ =
-    Sub.batch
-        [ Sub.map ActivityMessage (Time.every 1000 Tick) -- Update of the current time every second
-        ]
+    Sub.none
 
 
 main =

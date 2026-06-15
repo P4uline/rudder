@@ -383,7 +383,8 @@ class DirectiveEditForm(
                  |var main = document.getElementById("directiveComplianceApp")
                  |var initValues = {
                  |  directiveId : "${StringEscapeUtils.escapeEcmaScript(directive.id.uid.value)}",
-                 |  contextPath : contextPath
+                 |  contextPath : contextPath,
+                 |  timeZone :  localStorage.getItem('timeZone') ?? 'UTC',
                  |};
                  |var app = Elm.Directivecompliance.init({node: main, flags: initValues});
                  |app.ports.errorNotification.subscribe(function(str) {

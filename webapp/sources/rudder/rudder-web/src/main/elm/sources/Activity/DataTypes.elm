@@ -1,5 +1,6 @@
 module Activity.DataTypes exposing (..)
 
+import Html exposing (Html)
 import Http exposing (Error)
 import Http.Detailed
 import Time exposing (Posix, Zone)
@@ -47,5 +48,4 @@ type alias EventLogFilterOrder =
 
 type ActivityMsg
     = GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, List Activity ))
-    | Tick Posix
-    | Copy String
+    | CopyToClipboard String
