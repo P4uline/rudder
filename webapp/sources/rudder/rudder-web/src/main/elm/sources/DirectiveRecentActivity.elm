@@ -118,7 +118,6 @@ update msg model =
         CallApi call ->
             ( model, call model )
 
-        {- FIXME : why this ? remove this non expressive Msg, use only functional Message names -}
         RudderTableMsg m ->
             let
                 ( activityTable, tableMsg, _ ) =
