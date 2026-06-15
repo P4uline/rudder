@@ -1,5 +1,6 @@
 module Activity.DataTypes exposing (..)
 
+import Html.String as HtmlString exposing (Html)
 import Http exposing (Error)
 import Http.Detailed
 import Time exposing (Posix, Zone)
@@ -10,6 +11,7 @@ import Time exposing (Posix, Zone)
 --
 
 
+import Html.String
 type ContextPath
     = ContextPath String
 
@@ -23,10 +25,10 @@ type FilterType
 
 
 
-type alias Activity =
+type alias Activity msg =
     { id : Int
     , actor : String
-    , description : String
+    , description : HtmlString.Html msg
     , date : Posix
     }
 
@@ -45,6 +47,7 @@ type alias EventLogFilterOrder =
     }
 
 
-type ActivityMsg
-    = GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, List Activity))
+
+type ActivityMsg msg
+    = GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, List (Activity msg) ))
     | CopyToClipboard String

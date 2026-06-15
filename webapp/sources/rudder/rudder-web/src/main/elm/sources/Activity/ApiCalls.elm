@@ -19,7 +19,7 @@ getUrl (ContextPath contextPath) url p =
     Url.Builder.relative (contextPath :: "secure" :: "api" :: url) p
 
 
-getActivities : Search -> List String -> ContextPath -> Cmd ActivityMsg
+getActivities : Search -> List String -> ContextPath -> Cmd (ActivityMsg msg)
 getActivities search filterType contextPath =
     let
         req =

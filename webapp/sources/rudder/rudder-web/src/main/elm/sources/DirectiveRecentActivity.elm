@@ -1,21 +1,18 @@
 module DirectiveRecentActivity exposing (..)
 
 import Activity.ApiCalls exposing (copy, getActivities, processApiError)
-import Activity.DataTypes exposing (Activity, ActivityMsg(..), ContextPath(..), HtmlDescription, Search(..))
-import Activity.HtmlStringAdapter exposing (html2html, htmlToString, mockHtml2Html)
+import Activity.DataTypes exposing (Activity, ActivityMsg(..), ContextPath(..), Search(..))
 import Browser
 import Dict
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
-import Html.String as HtmlString
-import List.Nonempty as NonEmptyList
-import Markdown
-import Markdown.Config exposing (defaultOptions)
+import List.Nonempty as NonEmptyList exposing (Nonempty)
 import Ordering exposing (Ordering)
 import Rudder.Table exposing (..)
 import Time exposing (Posix, Zone)
 import TimeZone
 import Utils.DateUtils exposing (posixToString)
+import Html.String
 
 
 type DirectiveId
@@ -24,7 +21,7 @@ type DirectiveId
 
 type alias Model =
     { directiveId : DirectiveId
-    , activityTable : Rudder.Table.Model Activity Msg
+    , activityTable : Rudder.Table.Model (Activity Msg) Msg
     , contextPath : ContextPath
     , zone : Zone
     }
@@ -33,38 +30,20 @@ type alias Model =
 type Msg
     = CallApi (Model -> Cmd Msg)
     | RudderTableMsg (Rudder.Table.Msg Msg)
-    | ActivityMessage ActivityMsg
+    | ActivityMessage (ActivityMsg Msg)
 
 
-initTable : Zone -> Rudder.Table.Model Activity Msg
+initTable : Zone -> Rudder.Table.Model (Activity Msg) Msg
 initTable timezone =
     let
 
-        renderDescription : String -> Html.Html msg
-        renderDescription s =
-            div [class "mt-3"]
-                (Markdown.toHtml
-                    (Just
-                        { defaultOptions
-                            | rawHtml =
-                                Markdown.Config.Sanitize
-                                    { allowedHtmlElements = [ "a" ]
-                                    , allowedHtmlAttributes = [ "href" ]
-                                    }
-                        }
-                    )
-                    s
-                )
-
-        columns : NonEmptyList.Nonempty (Rudder.Table.Column Activity Msg)
-        columns =
-            NonEmptyList.Nonempty
+        orderingDesc : (Activity Msg) -> String
+        orderingDesc act= act.description |> Html.String.toString 0
+        columns :  Nonempty (Column (Activity Msg) Msg)
+        columns =  NonEmptyList.Nonempty
                 { name = ColumnName "Id", renderHtml = .id >> String.fromInt >> text, ordering = Ordering.byField .id }
                 [ { name = ColumnName "Actor", renderHtml = .actor >> text, ordering = Ordering.byField .actor }
-                , { name = ColumnName "Description"
-                  , renderHtml = \activity -> renderDescription activity.description
-                  , ordering = Ordering.byField .description
-                  }
+                , { name = ColumnName "Description", renderHtml = (.description >> Html.String.toHtml) , ordering = Ordering.byField (.description >> Html.String.toString 0) }
                 , { name = ColumnName "Date", renderHtml = .date >> posixToString timezone >> text, ordering = Ordering.byField (.date >> Time.posixToMillis) }
                 ]
 
