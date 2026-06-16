@@ -20,7 +20,7 @@ type DirectiveId
 
 type alias Model =
     { directiveId : DirectiveId
-    , activityTable : Rudder.Table.Model Activity Msg
+    , activityTable : Rudder.Table.Model (Activity ActivityMsg) Msg
     , contextPath : ContextPath
     , zone : Zone
     }
@@ -32,10 +32,11 @@ type Msg
     | ActivityMessage ActivityMsg
 
 
-initTable : Zone -> Rudder.Table.Model Activity Msg
+initTable : Zone -> Rudder.Table.Model (Activity ActivityMsg) Msg
 initTable timezone =
     -- FIXME call html method instead of text for description, decode description as Html
     let
+        -- columns : NonEmptyList.Nonempty (Rudder.Table.Column (Activity ActivityMsg) Msg)
         columns =
             NonEmptyList.Nonempty
                 { name = ColumnName "Id", renderHtml = .id >> String.fromInt >> text, ordering = Ordering.byField .id }

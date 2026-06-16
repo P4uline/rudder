@@ -24,10 +24,10 @@ type FilterType
     = List String
 
 
-type alias Activity =
+type alias Activity msg =
     { id : Int
     , actor : String
-    , description : Html ActivityMsg
+    , description : Html msg
     , date : Posix
     }
 
@@ -47,5 +47,5 @@ type alias EventLogFilterOrder =
 
 
 type ActivityMsg
-    = GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, List Activity ))
+    = GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, List (Activity ActivityMsg)))
     | CopyToClipboard String

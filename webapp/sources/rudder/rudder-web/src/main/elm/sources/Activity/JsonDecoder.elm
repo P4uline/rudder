@@ -9,12 +9,12 @@ import String exposing (join, split)
 import Html exposing (Html, text)
 
 
-decodeGetActivities : Decoder (List Activity)
+decodeGetActivities : Decoder (List (Activity msg))
 decodeGetActivities =
     at [ "data" ] (list decodeActivity)
 
 
-decodeActivity : Decoder Activity
+decodeActivity : Decoder (Activity msg)
 decodeActivity =
     succeed Activity
         |> required "id" int
@@ -22,10 +22,10 @@ decodeActivity =
         |> required "description" stringToHtmlMsg
         |> required "date" Json.Decode.Extra.datetime
 
-stringToHtmlMsg : Decoder (Html ActivityMsg)
+stringToHtmlMsg : Decoder (Html msg)
 stringToHtmlMsg =
     let
-        s2HtmlMsg : String -> Decoder (Html ActivityMsg)
+        s2HtmlMsg : String -> Decoder (Html msg)
         s2HtmlMsg s = succeed (text s)
     in
         string |> andThen s2HtmlMsg
