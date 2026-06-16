@@ -4,7 +4,8 @@ import Html exposing (Html)
 import Http exposing (Error)
 import Http.Detailed
 import Time exposing (Posix, Zone)
-
+import Activity.HtmlStringAdapter exposing (..)
+import Html.String as HtmlString
 
 
 --
@@ -24,10 +25,14 @@ type FilterType
     = List String
 
 
+
+type alias HtmlDescription msg = HtmlString.Html msg
+
 type alias Activity msg =
     { id : Int
     , actor : String
-    , description : Html msg
+    , description : HtmlDescription msg
+    , descriptionString : String
     , date : Posix
     }
 

@@ -6,26 +6,27 @@ import Json.Decode.Extra
 import Json.Decode.Pipeline exposing (..)
 import List exposing (drop, head)
 import String exposing (join, split)
-import Html exposing (Html, text)
+import Activity.HtmlStringAdapter exposing (text)
 
 
-decodeGetActivities : Decoder (List (Activity msg))
+decodeGetActivities : Decoder (List (Activity ActivityMsg))
 decodeGetActivities =
     at [ "data" ] (list decodeActivity)
 
 
-decodeActivity : Decoder (Activity msg)
+decodeActivity : Decoder (Activity ActivityMsg)
 decodeActivity =
     succeed Activity
         |> required "id" int
         |> required "actor" string
-        |> required "description" stringToHtmlMsg
+        |> required "description" stringToHtmlDescription
+        |> required "description" string
         |> required "date" Json.Decode.Extra.datetime
 
-stringToHtmlMsg : Decoder (Html msg)
-stringToHtmlMsg =
+stringToHtmlDescription : Decoder (HtmlDescription msg)
+stringToHtmlDescription =
     let
-        s2HtmlMsg : String -> Decoder (Html msg)
+        s2HtmlMsg : String -> Decoder (HtmlDescription msg)
         s2HtmlMsg s = succeed (text s)
     in
         string |> andThen s2HtmlMsg

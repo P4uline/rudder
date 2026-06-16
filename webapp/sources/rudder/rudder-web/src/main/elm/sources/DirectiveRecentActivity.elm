@@ -1,7 +1,7 @@
 module DirectiveRecentActivity exposing (..)
 
 import Activity.ApiCalls exposing (copy, getActivities, processApiError)
-import Activity.DataTypes exposing (Activity, ActivityMsg(..), ContextPath(..), Search(..))
+import Activity.DataTypes exposing (Activity, ActivityMsg(..), ContextPath(..), HtmlDescription, Search(..))
 import Browser
 import Dict
 import Html exposing (Html, div, text)
@@ -12,7 +12,8 @@ import Rudder.Table exposing (..)
 import Time exposing (Posix, Zone)
 import TimeZone
 import Utils.DateUtils exposing (posixToString)
-
+import Activity.HtmlStringAdapter exposing (html2html, htmlToString, mockHtml2Html)
+import Html.String as HtmlString
 
 type DirectiveId
     = DirectiveId String
@@ -31,17 +32,37 @@ type Msg
     | RudderTableMsg (Rudder.Table.Msg Msg)
     | ActivityMessage ActivityMsg
 
-
 initTable : Zone -> Rudder.Table.Model (Activity ActivityMsg) Msg
 initTable timezone =
     -- FIXME call html method instead of text for description, decode description as Html
     let
-        -- columns : NonEmptyList.Nonempty (Rudder.Table.Column (Activity ActivityMsg) Msg)
+
+        {-someHtml : HtmlString.Html msg
+        someHtml =
+            HtmlString.a [ HtmlStringAttributes.href "http://google.com" ] [ HtmlString.text "Google!" ]
+
+        htmlString2htmlLang : Html.Html msg
+        htmlString2htmlLang = HtmlString.toHtml someHtml
+
+        string2Html : String -> HtmlString.Html msg
+        string2Html s = someHtml
+
+        -}
+        descriptionRenderHtml : HtmlString.Html msg -> Html.Html msg
+        descriptionRenderHtml htmlStringAdapter = html2html htmlStringAdapter
+
+        descriptionRenderHtml2 : raw -> Html.Html msg
+        descriptionRenderHtml2 r = mockHtml2Html
+
+        -- FIXME
+        columns : NonEmptyList.Nonempty (Rudder.Table.Column (Activity ActivityMsg) Msg)
         columns =
             NonEmptyList.Nonempty
                 { name = ColumnName "Id", renderHtml = .id >> String.fromInt >> text, ordering = Ordering.byField .id }
                 [ { name = ColumnName "Actor", renderHtml = .actor >> text, ordering = Ordering.byField .actor }
-                , { name = ColumnName "Description", renderHtml = .description, ordering = Ordering.byField .description }
+                , { name = ColumnName "Description"
+                  , renderHtml = (\activity -> descriptionRenderHtml2 activity.description)
+                  , ordering = Ordering.byField .descriptionString }
                 , { name = ColumnName "Date", renderHtml = .date >> posixToString timezone >> text, ordering = Ordering.byField (.date >> Time.posixToMillis) }
                 ]
 
