@@ -61,8 +61,8 @@ initTable timezone =
                 { name = ColumnName "Id", renderHtml = .id >> String.fromInt >> text, ordering = Ordering.byField .id }
                 [ { name = ColumnName "Actor", renderHtml = .actor >> text, ordering = Ordering.byField .actor }
                 , { name = ColumnName "Description"
-                  , renderHtml = (\activity -> descriptionRenderHtml2 activity.description)
-                  , ordering = Ordering.byField .descriptionString }
+                  , renderHtml = (\activity -> Html.map ActivityMessage (HtmlString.toHtml activity.description))
+                  , ordering = Ordering.byField (.description >> HtmlString.toString 0) }
                 , { name = ColumnName "Date", renderHtml = .date >> posixToString timezone >> text, ordering = Ordering.byField (.date >> Time.posixToMillis) }
                 ]
 

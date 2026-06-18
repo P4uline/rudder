@@ -20,7 +20,6 @@ decodeActivity =
         |> required "id" int
         |> required "actor" string
         |> required "description" stringToHtmlDescription
-        |> required "description" string
         |> required "date" Json.Decode.Extra.datetime
 
 stringToHtmlDescription : Decoder (HtmlDescription msg)

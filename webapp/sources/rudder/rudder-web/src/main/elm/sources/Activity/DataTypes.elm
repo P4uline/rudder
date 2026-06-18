@@ -32,7 +32,6 @@ type alias Activity msg =
     { id : Int
     , actor : String
     , description : HtmlDescription msg
-    , descriptionString : String
     , date : Posix
     }
 
