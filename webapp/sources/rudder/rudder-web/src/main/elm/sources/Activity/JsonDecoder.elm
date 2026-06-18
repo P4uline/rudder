@@ -1,34 +1,37 @@
 module Activity.JsonDecoder exposing (..)
 
 import Activity.DataTypes exposing (..)
+import Html exposing (Html, div)
 import Json.Decode exposing (..)
 import Json.Decode.Extra
 import Json.Decode.Pipeline exposing (..)
 import List exposing (drop, head)
+import Markdown
+import Markdown.Config exposing (Options)
 import String exposing (join, split)
 import Activity.HtmlStringAdapter exposing (text)
 
 
-decodeGetActivities : Decoder (List (Activity ActivityMsg))
+decodeGetActivities : Decoder (List Activity)
 decodeGetActivities =
     at [ "data" ] (list decodeActivity)
 
 
-decodeActivity : Decoder (Activity ActivityMsg)
+decodeActivity : Decoder Activity
 decodeActivity =
     succeed Activity
         |> required "id" int
         |> required "actor" string
-        |> required "description" stringToHtmlDescription
+        |> required "description" string
         |> required "date" Json.Decode.Extra.datetime
 
-stringToHtmlDescription : Decoder (HtmlDescription msg)
+{-stringToHtmlDescription : Decoder (HtmlDescription msg)
 stringToHtmlDescription =
     let
-        s2HtmlMsg : String -> Decoder (HtmlDescription msg)
-        s2HtmlMsg s = succeed (text s)
+        string2HtmlMsg : String -> Decoder (HtmlDescription msg)
+        string2HtmlMsg s = succeed (div[] (Markdown.toHtml Nothing s))
     in
-        string |> andThen s2HtmlMsg
+        string |> andThen string2HtmlMsg-}
 
 decodeErrorDetails : String -> ( String, String )
 decodeErrorDetails json =

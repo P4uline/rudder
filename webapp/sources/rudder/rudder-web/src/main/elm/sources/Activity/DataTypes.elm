@@ -26,12 +26,12 @@ type FilterType
 
 
 
-type alias HtmlDescription msg = HtmlString.Html msg
+type alias HtmlDescription msg = Html.Html msg
 
-type alias Activity msg =
+type alias Activity =
     { id : Int
     , actor : String
-    , description : HtmlDescription msg
+    , description : String
     , date : Posix
     }
 
@@ -51,5 +51,5 @@ type alias EventLogFilterOrder =
 
 
 type ActivityMsg
-    = GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, List (Activity ActivityMsg)))
+    = GetActivities (Result (Http.Detailed.Error String) ( Http.Metadata, List Activity))
     | CopyToClipboard String
