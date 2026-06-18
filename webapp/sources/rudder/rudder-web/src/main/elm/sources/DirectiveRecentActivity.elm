@@ -38,30 +38,8 @@ type Msg
 
 initTable : Zone -> Rudder.Table.Model Activity Msg
 initTable timezone =
-    -- FIXME call html method instead of text for description, decode description as Html
     let
-        {- someHtml : HtmlString.Html msg
-           someHtml =
-               HtmlString.a [ HtmlStringAttributes.href "http://google.com" ] [ HtmlString.text "Google!" ]
 
-           htmlString2htmlLang : Html.Html msg
-           htmlString2htmlLang = HtmlString.toHtml someHtml
-
-           string2Html : String -> HtmlString.Html msg
-           string2Html s = someHtml
-
-        -}
-        descriptionRenderHtml : HtmlString.Html msg -> Html.Html msg
-        descriptionRenderHtml htmlStringAdapter =
-            html2html htmlStringAdapter
-
-        descriptionRenderHtml2 : row -> Html.Html msg
-        descriptionRenderHtml2 r =
-            mockHtml2Html
-
--- <a href="/rudder-web/secure/configurationManager/directiveManagement#{&amp;quot;directiveId&amp;quot;:&amp;quot;32a8a254-94a5-4802-aeb6-0b00123539d5&amp;quot;}">MOTD and pre-login banner</a>
--- <a href="/rudder-web/secure/configurationManager/directiveManagement#{&quot;directiveId&quot;:&quot;32a8a254-94a5-4802-aeb6-0b00123539d5&quot;}">MOTD and pre-login banner</a>
-        -- FIXME
         renderDescription : String -> Html.Html msg
         renderDescription s =
             div [class "mt-3"]
@@ -126,7 +104,7 @@ init flags =
         filterType =
             [ "AddDirective", "DeleteDirective", "ModifyDirective" ]
 
-        -- full text search on directive id to keep activity related to this directive
+        -- Full text search on directive id to keep activity related to this directive
         search =
             Search flags.directiveId
 
